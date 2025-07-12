@@ -8,7 +8,7 @@ function Settings() {
     const [groups, setGroups] = useState([]);
     const [currentGroup, setCurrentGroup] = useState('');
 
-    useEffect(() => {
+    const fetchSettings = () => {
         fetch('/api/settings')
             .then(res => res.json())
             .then(data => {
@@ -17,12 +17,15 @@ function Settings() {
                     : Object.values(data);
 
                 const uniqueGroups = [...new Set(settingsArray.map(s => s.group))];
-
                 setSettings(settingsArray);
                 setGroups(uniqueGroups);
-                setCurrentGroup(uniqueGroups[0] || '');
+                if (!currentGroup && uniqueGroups.length > 0) {
+                    setCurrentGroup(uniqueGroups[0]);
+                }
             });
-    }, []);
+    };
+
+    useEffect(fetchSettings, []);
 
     const settingsByGroup = settings.filter(s => s.group === currentGroup);
 
@@ -37,7 +40,10 @@ function Settings() {
                 <h1 className="text-xl font-semibold text-gray-300 mb-4">
                     {currentGroup}
                 </h1>
-                <SettingsContent settings={settingsByGroup} />
+                <SettingsContent
+                    settings={settingsByGroup}
+                    onSettingSaved={fetchSettings} // 🔁 auto-refresh after save
+                />
             </main>
         </div>
     );

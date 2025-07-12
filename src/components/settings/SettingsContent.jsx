@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import SettingItem from './SettingItem.jsx';
 
-function SettingsContent({ settings }) {
+
+function SettingsContent({ settings, onSettingSaved }) {
     const [notification, setNotification] = useState(null);
 
     const testConnection = async () => {
@@ -39,7 +40,7 @@ function SettingsContent({ settings }) {
 
             {settings.map(setting => (
                 <div key={setting.name} className="my-7">
-                    <SettingItem setting={setting} />
+                    <SettingItem setting={setting} onSave={onSettingSaved} />
                     {setting.name === "jellyfin_api_key" && (
                         <button
                             type="button"

@@ -3,46 +3,29 @@ import React, { useState, useCallback } from 'react';
 import SettingInput from './SettingInput.jsx';
 import SettingBool from './SettingBool.jsx';
 
-function SettingItem({ setting }) {
+function SettingItem({ setting, onSave }) {
     const [value, setValue] = useState(setting.value);
 
-    // Create a debounced function to save settings
-    const debouncedSave = useCallback(
-        (() => {
+    const debouncedSave = useCallback((() => {
             let timeoutId = null;
             return (newValue) => {
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
+                if (timeoutId) clearTimeout(timeoutId);
                 timeoutId = setTimeout(() => {
                     fetch('/api/settings', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            name: setting.name,
-                            value: newValue
-                        })
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({name: setting.name, value: newValue})
                     })
-                        .catch(error => {
-                            console.error('Error updating setting:', error);
-                        });
+                        .then(() => onSave?.())
+                        .catch(error => {console.error('Error updating setting:', error);});
                 }, 500); // Wait 500ms after last change before sending request
             };
         })(),
-        [setting.name]
-    );
+        [setting.name, onSave]);
 
     const handleChange = (newValue) => {
         setValue(newValue);
-        // For boolean values, save immediately
-        if (setting.type === 'bool') {
-            debouncedSave(newValue);
-        } else {
-            // For text inputs, use debouncing
-            debouncedSave(newValue);
-        }
+        debouncedSave(newValue);
     };
 
     if (setting.type === 'bool') {
